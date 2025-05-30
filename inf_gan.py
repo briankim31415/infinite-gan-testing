@@ -75,13 +75,12 @@ class MLP(torch.nn.Module):
 # We begin by defining the generator SDE.
 ###################
 class GeneratorFunc(torch.nn.Module):
-    noise_type = 'general'
-
-    def __init__(self, noise_size, hidden_size, mlp_size, num_layers, sde_type):
+    def __init__(self, noise_size, hidden_size, mlp_size, num_layers, sde_type='stratonovich', noise_type='general'):
         super().__init__()
         self._noise_size = noise_size
         self._hidden_size = hidden_size
         self.sde_type = sde_type
+        self.noise_type = noise_type
 
         ###################
         # Drift and diffusion are MLPs. They happen to be the same size.
@@ -105,13 +104,13 @@ class GeneratorFunc(torch.nn.Module):
 # Now we wrap it up into something that computes the SDE.
 ###################
 class Generator(torch.nn.Module):
-    def __init__(self, data_size, initial_noise_size, noise_size, hidden_size, mlp_size, num_layers, sde_type):
+    def __init__(self, data_size, initial_noise_size, noise_size, hidden_size, mlp_size, num_layers):
         super().__init__()
         self._initial_noise_size = initial_noise_size
         self._hidden_size = hidden_size
 
         self._initial = MLP(initial_noise_size, hidden_size, mlp_size, num_layers, tanh=False)
-        self._func = GeneratorFunc(noise_size, hidden_size, mlp_size, num_layers, sde_type=sde_type)
+        self._func = GeneratorFunc(noise_size, hidden_size, mlp_size, num_layers)
         self._readout = torch.nn.Linear(hidden_size, data_size)
 
     def forward(self, ts, batch_size):
@@ -190,19 +189,18 @@ class Discriminator(torch.nn.Module):
 ###################
 # Generate some data. For this example we generate some synthetic data from a time-dependent Ornstein-Uhlenbeck SDE.
 ###################
-def get_data(batch_size, device, sde_type):
+def get_data(batch_size, device):
     dataset_size = 8192
     t_size = 64
 
     class OrnsteinUhlenbeckSDE(torch.nn.Module):
-        noise_type = 'scalar'
-
-        def __init__(self, mu, theta, sigma, sde_type):
+        def __init__(self, mu, theta, sigma, sde_type='ito', noise_type='scalar'):
             super().__init__()
             self.register_buffer('mu', torch.as_tensor(mu))
             self.register_buffer('theta', torch.as_tensor(theta))
             self.register_buffer('sigma', torch.as_tensor(sigma))
             self.sde_type = sde_type
+            self.noise_type = noise_type
 
         def f(self, t, y):
             return self.mu * t - self.theta * y
@@ -225,7 +223,7 @@ def get_data(batch_size, device, sde_type):
     #     def g(self, t, y):
     #         return self.sigma * y
 
-    sde_gen = OrnsteinUhlenbeckSDE(mu=0.02, theta=0.1, sigma=0.4, sde_type=sde_type).to(device)
+    sde_gen = OrnsteinUhlenbeckSDE(mu=0.02, theta=0.1, sigma=0.4).to(device)
     # if sde_prcs == "ou":
     #     sde_gen = OrnsteinUhlenbeckSDE(mu=0.02, theta=0.1, sigma=0.4, sde_type=sde_type, noise_type=noise_type).to(device)
     # elif sde_prcs == "gbm":
@@ -358,7 +356,6 @@ def evaluate_loss(ts, batch_size, dataloader, generator, discriminator):
 def run_main(
         # Tuning hyperparameters
         config_num,
-        sde_type,
         optimiser,
 
         # Architectural hyperparameters. These are quite small for illustrative purposes.
@@ -372,7 +369,7 @@ def run_main(
         generator_lr=2e-4,      # Learning rate often needs careful tuning to the problem.
         discriminator_lr=1e-3,  # Learning rate often needs careful tuning to the problem.
         batch_size=1024,        # Batch size.
-        steps=10000,            # How many steps to train both generator and discriminator for.    10000
+        steps=1,            # How many steps to train both generator and discriminator for.    10000
         init_mult1=3,           # Changing the initial parameter size can help.
         init_mult2=0.5,         #
         weight_decay=0.01,      # Weight decay.
@@ -389,11 +386,11 @@ def run_main(
         print("Warning: CUDA not available; falling back to CPU but this is likely to be very slow.")
 
     # Data
-    ts, data_size, train_dataloader = get_data(batch_size=batch_size, device=device, sde_type=sde_type)
+    ts, data_size, train_dataloader = get_data(batch_size=batch_size, device=device)
     infinite_train_dataloader = (elem for it in iter(lambda: train_dataloader, None) for elem in it)
 
     # Models
-    generator = Generator(data_size, initial_noise_size, noise_size, hidden_size, mlp_size, num_layers, sde_type).to(device)
+    generator = Generator(data_size, initial_noise_size, noise_size, hidden_size, mlp_size, num_layers).to(device)
     discriminator = Discriminator(data_size, hidden_size, mlp_size, num_layers).to(device)
     # Weight averaging really helps with GAN training.
     averaged_generator = swa_utils.AveragedModel(generator)
@@ -475,11 +472,14 @@ def run_main(
     generator.load_state_dict(averaged_generator.module.state_dict())
     discriminator.load_state_dict(averaged_discriminator.module.state_dict())
 
-    _, _, test_dataloader = get_data(batch_size=batch_size, device=device, sde_type=sde_type)
+    _, _, test_dataloader = get_data(batch_size=batch_size, device=device)
 
     plot(ts, generator, test_dataloader, num_plot_samples, plot_locs, config_num)
 
 
 def fire_main(config, config_num):
-    fire.Fire(run_main(config_num=config_num, sde_type=config['sde_type'], optimiser=config['optimiser'],
-                       initial_noise_size=config['initial_noise_size'], noise_size=config['noise_size']))
+    # fire.Fire(run_main(config_num=config_num, optimiser=config['optimiser'],
+    #                    initial_noise_size=config['initial_noise_size'], noise_size=config['noise_size']))
+    
+    run_main(config_num=config_num, optimiser=config['optimiser'],
+                       initial_noise_size=config['initial_noise_size'], noise_size=config['noise_size'])
