@@ -369,7 +369,7 @@ def run_main(
         generator_lr=2e-4,      # Learning rate often needs careful tuning to the problem.
         discriminator_lr=1e-3,  # Learning rate often needs careful tuning to the problem.
         batch_size=1024,        # Batch size.
-        steps=1,            # How many steps to train both generator and discriminator for.    10000
+        steps=10000,            # How many steps to train both generator and discriminator for.    10000
         init_mult1=3,           # Changing the initial parameter size can help.
         init_mult2=0.5,         #
         weight_decay=0.01,      # Weight decay.
