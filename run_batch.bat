@@ -9,7 +9,7 @@
 #SBATCH -t 05:00:00
 #SBATCH --mail-type=all
 #SBATCH --mail-user=briankim31415@gmail.com
-#SBATCH -A CCR25007
+#SBATCH -A ASC24027
 
 module load gcc cuda python3
 source ./inf_gan/bin/activate
