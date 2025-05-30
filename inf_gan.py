@@ -300,7 +300,7 @@ def plot(ts, generator, dataloader, num_plot_samples, plot_locs, config_num):
         plt.xlabel('Value')
         plt.ylabel('Density')
         plt.title(f'Marginal distribution at time {time}.')
-        plt.tight_layout()
+        # plt.tight_layout()
         # plt.show()
         plt.savefig(f'output/{config_num}_hist_{i}.png')
 
@@ -320,7 +320,7 @@ def plot(ts, generator, dataloader, num_plot_samples, plot_locs, config_num):
         generated_first = False
     plt.legend()
     plt.title(f"{num_plot_samples} samples from both real and generated distributions.")
-    plt.tight_layout()
+    # plt.tight_layout()
     # plt.show()
     plt.savefig(f'output/{config_num}_samples.png')
 
