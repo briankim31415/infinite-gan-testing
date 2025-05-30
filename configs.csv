@@ -1,0 +1,9 @@
+optimiser,initial_noise_size,noise_size
+adadelta,5,3
+adadelta,3,1
+adadelta,10,3
+adadelta,10,5
+adam,5,3
+adam,3,1
+adam,10,3
+adam,10,5
