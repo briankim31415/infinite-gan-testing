@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J sde_gan_test
+#SBATCH -J inf_gan_test
 #SBATCH -o run_logs/job.o%j
 #SBATCH -e run_logs/job.e%j
 #SBATCH -p gh
