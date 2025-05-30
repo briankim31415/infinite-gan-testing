@@ -13,4 +13,4 @@
 
 module load gcc cuda python3
 source ./inf_gan/bin/activate
-python3 examples/sde_gan.py
+python3 run_tests.py
