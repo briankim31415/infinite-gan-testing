@@ -303,6 +303,7 @@ def plot(ts, generator, dataloader, num_plot_samples, plot_locs, config_num):
         # plt.tight_layout()
         # plt.show()
         plt.savefig(f'output/{config_num}_hist_{i}.png')
+        plt.close()
 
     real_samples = real_samples[:num_plot_samples]
     generated_samples = generated_samples[:num_plot_samples]
@@ -323,6 +324,7 @@ def plot(ts, generator, dataloader, num_plot_samples, plot_locs, config_num):
     # plt.tight_layout()
     # plt.show()
     plt.savefig(f'output/{config_num}_samples.png')
+    plt.close()
 
 
 ###################
@@ -475,11 +477,4 @@ def run_main(
     _, _, test_dataloader = get_data(batch_size=batch_size, device=device)
 
     plot(ts, generator, test_dataloader, num_plot_samples, plot_locs, config_num)
-
-
-def fire_main(config, config_num):
-    # fire.Fire(run_main(config_num=config_num, optimiser=config['optimiser'],
-    #                    initial_noise_size=config['initial_noise_size'], noise_size=config['noise_size']))
     
-    run_main(config_num=config_num, optimiser=config['optimiser'],
-                       initial_noise_size=config['initial_noise_size'], noise_size=config['noise_size'])
