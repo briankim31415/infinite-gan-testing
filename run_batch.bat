@@ -6,7 +6,7 @@
 #SBATCH -p gpu-a100-small
 #SBATCH -N 1
 #SBATCH -n 1
-#SBATCH -t 05:00:00
+#SBATCH -t 24:00:00
 #SBATCH --mail-type=all
 #SBATCH --mail-user=briankim31415@gmail.com
 #SBATCH -A ASC24027
