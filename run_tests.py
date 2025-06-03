@@ -1,11 +1,13 @@
 from inf_gan import run_main
 import pandas as pd
 
-CONFIG_FILE = "configs.csv"  # or configs.json
+CONFIG_FILE = "configs.csv"
 
 def main():
+    # Get configs from csv file
     configs = pd.read_csv(CONFIG_FILE).to_dict(orient="records")
 
+    # Run Infinite GAN for each config
     for i, config in enumerate(configs):
         print(f"Running config {i+1} of {len(configs)}")
 
